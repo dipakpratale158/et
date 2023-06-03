@@ -13,7 +13,7 @@
     <div class="navbar-header" style="float: left; padding: 8px; text-align: center; width: 100%;">
       <a class="navbar-brand" href="#" style="float:none;">
         <i class="fa-solid fa-sack-dollar"></i>
-        Expense Tracker
+        Todoes app
       </a>
     </div>
   </nav>
@@ -21,15 +21,23 @@
         <form class="form-inline" id="my-form">
             <div class="row m-auto">
                 <div class="col-sm-auto">
-                    <label class="col-form-label-sm" for="expAmount">Expense Amount</label>
-                  <input type="number" id="expAmount" class="form-control-sm" placeholder="0" aria-label="Expense amount">
+                    <label class="col-form-label-sm" for="expAmount"> Name</label>
+                  <input type="text" id="expAmount" class="form-control-sm" placeholder="0" aria-label="Expense amount">
                 </div>
                 <div class="col-sm-auto">
-                    <label class="col-form-label-sm" for="expDescription">Expense Description</label>
+                    <label class="col-form-label-sm" for="expDescription">Description</label>
                   <input type="text" id="expDescription" class="form-control-sm" placeholder="description" aria-label="description">
                 </div>
                 <div class="col-sm-auto">
-                    <label class="col-form-label-sm" for="expCategory">Expense Category</label>
+                    <label class="col-form-label-sm" for="expDescription">Price</label>
+                  <input type="number" id="Price" class="form-control-sm" placeholder="description" aria-label="description">
+                </div>
+                <div class="col-sm-auto">
+                    <label class="col-form-label-sm" for="expDescription">quantity</label>
+                  <input type="number" id="Quantity" class="form-control-sm" placeholder="description" aria-label="description">
+                </div>
+                <div class="col-sm-auto">
+                    <label class="col-form-label-sm" for="expCategory"> Category</label>
                     <select class="form-control-sm" id="expCategory" name="" id="">
                         <option value="food">food</option>
                         <option value="fuel">fuel</option>
@@ -51,6 +59,9 @@
   const myForm = document.querySelector('#my-form');
   const expAmt = document.querySelector("#expAmount");
   const expDesc = document.querySelector("#expDescription");
+  const Price = document.querySelector("#Price");
+  const Quantity = document.querySelector("#Quantity");
+
   const expCat = document.querySelector("#expCategory");
   const message = document.querySelector(".msg");
   const expList = document.querySelector(".expList");
@@ -61,10 +72,10 @@
       const res = await axios.get('http://localhost:3000/getExpenses');
       console.log("res",res.data)
       res.data.forEach(expense => {
-            const {amount, description, category} = expense;
+            const {amount, description, Price,Quantity,category} = expense;
             const li = document.createElement("li");
             li.classList.add("list-group-item-warning")
-            const text = document.createTextNode(`${amount}-${description}-${category}`);
+            const text = document.createTextNode(`${amount}-${description}-${Price}-${Quantity}-${category}`);
             const deleteBtn = document.createElement("button");
             const editBtn = document.createElement("button");
             deleteBtn.classList.add("btn","btn-danger","btn-close");
@@ -84,7 +95,7 @@
   async function newExpense(e) {
         try{
             e.preventDefault();
-            if(expAmt.value === "" || expDesc.value === "" || expCat.value === "") {
+            if(expAmt.value === "" || expDesc.value === "" || expCat.value === "" || Price.value === "" || Quantity.value === "") {
                 message.classList.add("bg-danger");
                 message.innerHTML = "please enter all fields";
                 setTimeout(() => message.remove(), 1000);
@@ -93,15 +104,17 @@
                 let expItem = {
                     expAmt : expAmt.value,
                     expDesc : expDesc.value,
-                    expCat : expCat.value
+                    expCat : expCat.value,
+                    Price : Price.value,
+                    Quantity : Quantity.value,
                 }
                 const res = await axios.post(`http://localhost:3000/newExpense`,expItem);
                 console.log(res.data)
-                const { price, name, category, _id} = res.data;
+                const { price, name, prise,quantity, category, _id} = res.data;
                 console.log(_id)
                 const li = document.createElement("li");
                 li.classList.add("list-group-item-warning")
-                const text = document.createTextNode(`${expAmt.value}-${expDesc.value}-${expCat.value}`);
+                const text = document.createTextNode(`${expAmt.value}-${expDesc.value}-${Price.value}-${Quantity.value}-${expCat.value}`);
                 const deleteBtn = document.createElement("button");
                 const editBtn = document.createElement("button");
                 deleteBtn.classList.add("btn","btn-danger","btn-close");
@@ -138,7 +151,7 @@
             const readExp = await axios.get(`http://localhost:3000/getExpenses`);
             readExp.data.forEach(expense => {
               console.log(expense)
-                if(expense.amount === +li[0] && expense.description === li[1] && expense.category === li[2]) {
+                if(expense.amount === +li[0] && expense.description === li[1] && expense.Price === li[2] && expense.Quantity === li[3]&& expense.category === li[4]) {
                     id = expense.id;
                 }
             }) 
@@ -204,14 +217,17 @@ expList.addEventListener('click', async (e) => {
         e.preventDefault();
         let button = document.querySelector("#Button");
         button.innerHTML = "update";
-        const [amount, description, category] = e.target.parentNode.firstChild.wholeText.split('-');
+        const [amount, description, Price,Quantity, category] = e.target.parentNode.firstChild.wholeText.split('-');
         document.querySelector("#expAmount").setAttribute('value', amount);
         document.querySelector("#expDescription").setAttribute('value', description);
+        document.querySelector("#Price").setAttribute('value', Price);
+        document.querySelector("#Quantity").setAttribute('value', Quantity);
+
         document.querySelector("#expCategory").setAttribute('value', category);
         let li = e.target.parentNode.firstChild.wholeText.split('-');
         const readExp = await axios.get(`http://localhost:3000/getExpenses`);
         readExp.data.forEach(expense => {
-            if(expense.amount === +li[0] && expense.description === li[1] && expense.category === li[2]) {
+            if(expense.amount === +li[0] && expense.description === li[1] && expense.Price === li[2] && expense.Quantity === li[3] && expense.category === li[4]) {
                 id = expense.id;
             }
         }) 
@@ -232,6 +248,9 @@ expList.addEventListener('click', async (e) => {
         expItem = {
             amount : document.querySelector("#expAmount").value,
             description : document.querySelector("#expDescription").value,
+            Price : document.querySelector("#Price").value,
+            Quantity : document.querySelector("#Quantity").value,
+
             category : document.querySelector("#expCategory").value
         }
         console.log(expItem, id);
